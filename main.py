@@ -16,7 +16,6 @@ from config import (
     FILE_PATHS,
     TRANSCRIPTS
 )
-from transformers import AutoTokenizer
 
 logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
 
@@ -87,7 +86,7 @@ if __name__ == "__main__":
     if not query:
         sys.exit()
 
-    # download_all_vtts()
+    download_all_vtts()
     preprocess_transcripts()
 
     with open(FILE_PATHS, "rb") as f:
