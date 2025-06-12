@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Acharya Prashant Q&A</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; max-width: 700px; }
+    h2 { color: #2d3a4a; }
+    #question { width: 90%; padding: 10px; font-size: 1.1em; }
+    button { padding: 10px 20px; font-size: 1.1em; margin-left: 10px; }
+    #answer-box {
+      margin-top: 30px;
+      padding: 18px;
+      background: #f9f9fc;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      min-height: 60px;
+      font-size: 1.08em;
+    }
+    .loading { color: #888; }
+    @media (max-width: 600px) {
+      #question { width: 100%; }
+      body { margin: 8px; }
+    }
+  </style>
+  <!-- Load marked.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <h2>Ask Acharya Prashant</h2>
+  <input id="question" type="text" placeholder="Type your question" onkeydown="if(event.key==='Enter'){ask();}">
+  <button onclick="ask()">Ask</button>
+  <div id="answer-box"></div>
+
+  <script>
+    async function ask() {
+      const q = document.getElementById("question").value.trim();
+      const answerBox = document.getElementById("answer-box");
+      if (!q) {
+        answerBox.innerHTML = "<span style='color:red;'>Please enter a question.</span>";
+        return;
+      }
+      answerBox.innerHTML = "<span class='loading'>Loading...</span>";
+      try {
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ query: q })
+        });
+        const data = await res.json();
+        if (data.answer) {
+          // Render markdown as HTML
+          answerBox.innerHTML = marked.parse(data.answer);
+        } else {
+          answerBox.innerHTML = `<span style='color:red;'>${data.error || "No answer returned."}</span>`;
+        }
+      } catch (e) {
+        answerBox.innerHTML = "<span style='color:red;'>Error contacting server.</span>";
+      }
+    }
+  </script>
+</body>
+</html>
