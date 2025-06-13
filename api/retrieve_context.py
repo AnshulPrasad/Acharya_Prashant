@@ -11,6 +11,7 @@ index = faiss.read_index(TRANSCRIPT_INDEX)
 logging.info(f"Loaded FAISS index from {TRANSCRIPT_INDEX}.")
 
 def retrieve_transcripts(query, file_path, transcripts, top_k=3):
+    print("\n")
     logging.info("Starting retrieval process...")
 
     query_embedding = embedding_model.encode([query], convert_to_tensor=False)
@@ -24,5 +25,5 @@ def retrieve_transcripts(query, file_path, transcripts, top_k=3):
         results.append(transcripts[idx])
         logging.info(f"Retrieved transcript from: {file_path[idx]}")
 
-    logging.info("Retrieval process completed.\n")
+    logging.info("Retrieval process completed.")
     return results
