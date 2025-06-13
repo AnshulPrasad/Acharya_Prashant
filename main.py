@@ -14,10 +14,35 @@ from config import (
     RETRIEVED_TRANSCRIPTS_FILE,
     RESPONSE_FILE,
     FILE_PATHS,
-    TRANSCRIPTS
+    TRANSCRIPTS,
+    MAX_CONTEXT_WORDS,
 )
 
-logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
+import pytz
+from datetime import datetime
+
+# 1) Define IST timezone and converter
+IST = pytz.timezone("Asia/Kolkata")
+def ist_time(*args):
+    return datetime.now(IST).timetuple()
+
+# 2) Create a handler and formatter
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    fmt="%(asctime)s %(levelname)s: %(message)s",
+    datefmt="%d-%m-%Y %H:%M:%S"
+)
+formatter.converter = ist_time
+handler.setFormatter(formatter)
+
+# 3) Configure the root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+# Remove any old handlers (so default UTC handler is gone)
+root_logger.handlers = []
+# Add our new handler
+root_logger.addHandler(handler)
+
 
 
 def download_all_vtts():
@@ -53,7 +78,7 @@ def get_user_query():
 
 def retrieve_contexts(query, file_paths, transcripts):
     retrieved_transcripts = retrieve_transcripts(
-        query, file_paths, transcripts, TRANSCRIPT_INDEX, 10
+        query, file_paths, transcripts, 10
     )
     if not retrieved_transcripts:
         logging.warning("No transcripts retrieved.")
@@ -101,6 +126,10 @@ if __name__ == "__main__":
     if not retrieved_transcripts:
         sys.exit()
 
-    context = " ".join(retrieved_transcripts)
-    response = generate_response(query, context)
+    full_context = " ".join(retrieved_transcripts)
+    logging.info(
+        f"Number of characters in retrieved_transcripts separated by space: {len(full_context.split(' '))}"
+    )
+    limit_context = " ".join(full_context.split(" ")[:MAX_CONTEXT_WORDS])
+    response = generate_response(query, limit_context)
     write_response(response)
