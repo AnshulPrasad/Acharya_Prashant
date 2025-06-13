@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from api.generate_response import generate_response
 from api.retrieve_context import retrieve_transcripts
-from config import TRANSCRIPT_INDEX, FILE_PATHS, TRANSCRIPTS
+from config import TRANSCRIPT_INDEX, FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_CHARS
 from fastapi.middleware.cors import CORSMiddleware
 import traceback, logging, pickle
 
@@ -31,18 +31,31 @@ async def ask_question(request: Request):
         if not query:
             return JSONResponse({"error": "Query cannot be empty"}, status_code=400)
         retrieved_transcripts = retrieve_transcripts(
-        query, file_paths, transcripts, TRANSCRIPT_INDEX, 5
-    )
+            query, file_paths, transcripts, TRANSCRIPT_INDEX, 10
+        )
         if not retrieved_transcripts:
             return JSONResponse(
                 {"error": "No relevant transcripts found"}, status_code=404
             )
-        context = " ".join(retrieved_transcripts)
-        response = generate_response(query, context)
+
+        full_context = " ".join(retrieved_transcripts)
+        logging.info(
+            f"Number of characters in retrieved_transcripts separated by space: {len(full_context.split(' '))}"
+        )
+        if len(full_context.split(" ")) >= MAX_CONTEXT_CHARS:
+            limit_context = " ".join(
+                retrieved_transcripts.split(" ")[:MAX_CONTEXT_CHARS]
+            )
+        else:
+            limit_context = full_context
+
+        response = generate_response(query, limit_context)
         return JSONResponse({"answer": response})
     except Exception as e:
         logging.error(f"Internal error: {e}\n{traceback.format_exc()}")
-        return JSONResponse({"error": "Internal server error. Please try again later."}, status_code=500)
+        return JSONResponse(
+            {"error": "Internal server error. Please try again later."}, status_code=500
+        )
 
 
 from fastapi.staticfiles import StaticFiles
