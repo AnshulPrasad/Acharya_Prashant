@@ -1,18 +1,17 @@
 import numpy as np
 import faiss, logging
 from sentence_transformers import SentenceTransformer
-
+from config import TRANSCRIPT_INDEX
 logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
 
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+logging.info("Loaded embedding model for query.")
 
-def retrieve_transcripts(query, file_path, transcripts, transcript_index, top_k=3):
+index = faiss.read_index(TRANSCRIPT_INDEX)
+logging.info(f"Loaded FAISS index from {TRANSCRIPT_INDEX}.")
+
+def retrieve_transcripts(query, file_path, transcripts, top_k=3):
     logging.info("Starting retrieval process...")
-
-    embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-    logging.info("Loaded embedding model for query.")
-
-    index = faiss.read_index(transcript_index)
-    logging.info(f"Loaded FAISS index from {transcript_index}.")
 
     query_embedding = embedding_model.encode([query], convert_to_tensor=False)
     logging.info("Encoded query to embedding.")
