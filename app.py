@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from api.generate_response import generate_response
 from api.retrieve_context import retrieve_transcripts
-from config import TRANSCRIPT_INDEX, FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_WORDS
+from config import FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_WORDS
 from fastapi.middleware.cors import CORSMiddleware
 import traceback, logging, pickle, pytz
 from datetime import datetime
@@ -55,7 +55,7 @@ async def ask_question(request: Request):
         if not query:
             return JSONResponse({"error": "Query cannot be empty"}, status_code=400)
         retrieved_transcripts = retrieve_transcripts(
-            query, file_paths, transcripts, TRANSCRIPT_INDEX, 10
+            query, file_paths, transcripts, 10
         )
         if not retrieved_transcripts:
             return JSONResponse(
