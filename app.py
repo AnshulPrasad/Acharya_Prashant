@@ -44,7 +44,7 @@ async def ask_question(request: Request):
         )
         if len(full_context.split(" ")) >= MAX_CONTEXT_CHARS:
             limit_context = " ".join(
-                retrieved_transcripts.split(" ")[:MAX_CONTEXT_CHARS]
+                full_context.split(" ")[:MAX_CONTEXT_CHARS]
             )
         else:
             limit_context = full_context
