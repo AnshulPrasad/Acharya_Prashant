@@ -2,9 +2,33 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from api.generate_response import generate_response
 from api.retrieve_context import retrieve_transcripts
-from config import TRANSCRIPT_INDEX, FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_CHARS
+from config import TRANSCRIPT_INDEX, FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_WORDS
 from fastapi.middleware.cors import CORSMiddleware
-import traceback, logging, pickle
+import traceback, logging, pickle, pytz
+from datetime import datetime
+
+# 1) Define IST timezone and converter
+IST = pytz.timezone("Asia/Kolkata")
+def ist_time(*args):
+    return datetime.now(IST).timetuple()
+
+# 2) Create a handler and formatter
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    fmt="%(asctime)s %(levelname)s: %(message)s",
+    datefmt="%d-%m-%Y %H:%M:%S"
+)
+formatter.converter = ist_time
+handler.setFormatter(formatter)
+
+# 3) Configure the root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+# Remove any old handlers (so default UTC handler is gone)
+root_logger.handlers = []
+# Add our new handler
+root_logger.addHandler(handler)
+
 
 app = FastAPI()
 
@@ -42,9 +66,9 @@ async def ask_question(request: Request):
         logging.info(
             f"Number of characters in retrieved_transcripts separated by space: {len(full_context.split(' '))}"
         )
-        if len(full_context.split(" ")) >= MAX_CONTEXT_CHARS:
+        if len(full_context.split(" ")) >= MAX_CONTEXT_WORDS:
             limit_context = " ".join(
-                full_context.split(" ")[:MAX_CONTEXT_CHARS]
+                full_context.split(" ")[:MAX_CONTEXT_WORDS]
             )
         else:
             limit_context = full_context
