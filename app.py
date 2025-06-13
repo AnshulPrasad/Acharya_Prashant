@@ -50,6 +50,7 @@ with open(TRANSCRIPTS, "rb") as f:
 @app.post("/ask")
 async def ask_question(request: Request):
     try:
+        print("\n")
         data = await request.json()
         query = data.get("query")
         if not query:
