@@ -1,63 +1,173 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Acharya Prashant Q&A</title>
+  <meta charset="UTF-8">
+  <title>Ask Acharya Prashant</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Markdown renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; max-width: 700px; }
-    h2 { color: #2d3a4a; }
-    #question { width: 90%; padding: 10px; font-size: 1.1em; }
-    button { padding: 10px 20px; font-size: 1.1em; margin-left: 10px; }
+    :root {
+      --primary: #2d3a4a;
+      --accent: #ffb400;
+      --bg-light: #f4f6fa;
+      --card-bg: #ffffff;
+      --fg: #2d3a4a;
+      --fg-light: #f9f9fc;
+      --radius: 12px;            /* corner radius */
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg-light);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+
+    /* HERO / BANNER */
+    .hero {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      height: clamp(200px, 35vh, 350px);
+      background:
+        linear-gradient(rgba(45,58,74,0.6), rgba(45,58,74,0.3)),
+        url("assets/images/hero-background.jpg") center/cover no-repeat;
+    }
+    .hero img {
+      width: clamp(100px, 15%, 180px);
+      height: auto;
+      border-radius: var(--radius);  /* rounded rectangle */
+      object-fit: cover;
+      margin-bottom: 15px;
+      /* border removed */
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      color: #fff;
+      z-index: 1;
+    }
+
+    /* Q&A CARD */
+    .container {
+      position: relative;
+      max-width: 520px;
+      margin: -80px auto 40px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      z-index: 2;
+    }
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 24px;
+    }
+    .input-group input {
+      flex: 1 1 200px;
+      padding: 14px;
+      font-size: 1rem;
+      border: 1px solid #cbd2db;
+      border-radius: 6px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(45,58,74,0.15);
+    }
+    .input-group button {
+      flex: 0 0 auto;
+      padding: 14px 24px;
+      font-size: 1rem;
+      background: var(--accent);
+      color: var(--primary);
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    .input-group button:hover {
+      background: #e0a200;
+      transform: translateY(-1px);
+    }
+
     #answer-box {
-      margin-top: 30px;
-      padding: 18px;
-      background: #f9f9fc;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      min-height: 60px;
-      font-size: 1.08em;
+      padding: 20px 24px;
+      background: var(--fg-light);
+      border-top: 1px solid #e1e5eb;
+      min-height: 100px;
+      font-size: 1.05em;
     }
     .loading { color: #888; }
-    @media (max-width: 600px) {
-      #question { width: 100%; }
-      body { margin: 8px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 480px) {
+      .hero { height: clamp(180px, 30vh, 260px); }
+      .hero img { width: clamp(80px, 25%, 120px); }
+      .container { margin: -60px 16px 30px; }
+      .input-group { padding: 16px; }
+      .input-group input, .input-group button { flex: 1 1 100%; }
+      .input-group button { margin-top: 8px; }
+      #answer-box { padding: 16px; }
     }
   </style>
-  <!-- Load marked.js from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <h2>Ask Acharya Prashant</h2>
-  <input id="question" type="text" placeholder="Type your question" onkeydown="if(event.key==='Enter'){ask();}">
-  <button onclick="ask()">Ask</button>
-  <div id="answer-box"></div>
 
+  <!-- HERO / BANNER -->
+  <header class="hero">
+    <img src="assets/images/Acharya_Prashant.webp" alt="Acharya Prashant">
+    <h1>Ask Acharya Prashant</h1>
+  </header>
+
+  <!-- Q&A CARD -->
+  <div class="container">
+    <div class="input-group">
+      <input
+        id="question"
+        type="text"
+        placeholder="Type your question…"
+        onkeydown="if(event.key==='Enter'){ask();}">
+      <button onclick="ask()">Ask</button>
+    </div>
+    <div id="answer-box"></div>
+  </div>
+
+  <!-- Q&A Script -->
   <script>
     async function ask() {
-      const q = document.getElementById("question").value.trim();
-      const answerBox = document.getElementById("answer-box");
+      const input = document.getElementById("question");
+      const q = input.value.trim();
+      const box = document.getElementById("answer-box");
       if (!q) {
-        answerBox.innerHTML = "<span style='color:red;'>Please enter a question.</span>";
+        box.innerHTML = "<span style='color:red;'>Please enter a question.</span>";
         return;
       }
-      answerBox.innerHTML = "<span class='loading'>Loading...</span>";
+      box.innerHTML = "<span class='loading'>Loading…</span>";
       try {
         const res = await fetch("/ask", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
+          headers: {"Content-Type":"application/json"},
           body: JSON.stringify({ query: q })
         });
         const data = await res.json();
-        if (data.answer) {
-          // Render markdown as HTML
-          answerBox.innerHTML = marked.parse(data.answer);
-        } else {
-          answerBox.innerHTML = `<span style='color:red;'>${data.error || "No answer returned."}</span>`;
-        }
-      } catch (e) {
-        answerBox.innerHTML = "<span style='color:red;'>Error contacting server.</span>";
+        box.innerHTML = data.answer
+          ? marked.parse(data.answer)
+          : `<span style='color:red;'>${data.error||"No answer returned."}</span>`;
+      } catch {
+        box.innerHTML = "<span style='color:red;'>Error contacting server.</span>";
       }
     }
   </script>
+
 </body>
 </html>
