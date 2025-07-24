@@ -77,7 +77,7 @@ async def ask_question(request: Request):
         if not query:
             return JSONResponse({"error": "Query cannot be empty"}, status_code=400)
         retrieved_transcripts = retrieve_transcripts(
-            query, file_paths, transcripts, 10
+            query, file_paths, transcripts, 15
         )
         if not retrieved_transcripts:
             return JSONResponse(
