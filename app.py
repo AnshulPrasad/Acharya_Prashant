@@ -106,7 +106,8 @@ async def ask_question(request: Request):
         response = generate_response(query, limit_context)
 
         logging.info(f"Received query: {query}")
-        logging.info(f"Context: {' '.join(limit_context.split('\n'))}")
+        context_str = ' '.join(limit_context.split('\n'))
+        logging.info(f"Context: {context_str}")
         logging.info(f"Response: {response}")
 
         return JSONResponse({"answer": response})
