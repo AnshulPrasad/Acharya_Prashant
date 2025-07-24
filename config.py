@@ -22,4 +22,4 @@ API_URL = "https://models.github.ai/inference"
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
 GH_API_TOKEN = os.environ.get("GITHUB_TOKEN")
 MODEL = "openai/gpt-4.1"
-MAX_CONTEXT_WORDS = 4000
+MAX_CONTEXT_TOKENS = 6000
