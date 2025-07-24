@@ -78,7 +78,6 @@ async def ask_question(request: Request):
         data = await request.json()
 
         query = data.get("query")
-        logging.info(f"Received query:\n{query}")
         if not query:
             return JSONResponse({"error": "Query cannot be empty"}, status_code=400)
         
@@ -103,10 +102,12 @@ async def ask_question(request: Request):
         logging.info(
             f"Total number of words in limit_context: {len(limit_context.split(' '))}"
         )
-        logging.info(f"Context:\n{limit_context}")
 
         response = generate_response(query, limit_context)
-        logging.info(f"Response:\n{response}")
+
+        logging.info(f"Received query: {query}")
+        logging.info(f"Context: {" ".join(limit_context.split("\n"))}")
+        logging.info(f"Response: {response}")
 
         return JSONResponse({"answer": response})
 
