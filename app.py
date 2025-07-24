@@ -2,9 +2,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from api.generate_response import generate_response
 from api.retrieve_context import retrieve_transcripts
-from config import FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_WORDS
+from config import FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_TOKENS, MODEL
 from fastapi.middleware.cors import CORSMiddleware
-import traceback, logging, pickle, pytz
+import traceback, logging, pickle, pytz, tiktoken
 from datetime import datetime
 
 # 1) Define IST timezone and converter
@@ -28,6 +28,27 @@ root_logger.setLevel(logging.INFO)
 root_logger.handlers = []
 # Add our new handler
 root_logger.addHandler(handler)
+
+try:
+    encoder = tiktoken.encoding_for_model(MODEL)
+except KeyError:
+    # fallback for custom or unrecognized model names
+    encoder = tiktoken.get_encoding("cl100k_base")
+
+def count_tokens(text: str) -> int:
+    """Return the number of tokens in a string, using your model's tokenizer."""
+    return len(encoder.encode(text))
+
+
+def trim_to_token_limit(text: str, max_tokens: int) -> str:
+    """
+    If text exceeds max_tokens, cut it down to the first max_tokens tokens.
+    """
+    tokens = encoder.encode(text)
+    if len(tokens) <= max_tokens:
+        return text
+    # decode only the first max_tokens tokens back into a string
+    return encoder.decode(tokens[:max_tokens])
 
 
 app = FastAPI()
@@ -64,15 +85,16 @@ async def ask_question(request: Request):
             )
 
         full_context = " ".join(retrieved_transcripts)
+        logging.info(f"Total number of tokens in full_context: {count_tokens(full_context)}")
         logging.info(
-            f"Number of characters in retrieved_transcripts separated by space: {len(full_context.split(' '))}"
+            f"Total number of words in full_context: {len(full_context.split(' '))}"
         )
-        if len(full_context.split(" ")) >= MAX_CONTEXT_WORDS:
-            limit_context = " ".join(
-                full_context.split(" ")[:MAX_CONTEXT_WORDS]
-            )
-        else:
-            limit_context = full_context
+
+        limit_context = trim_to_token_limit(full_context, MAX_CONTEXT_TOKENS)
+        logging.info(f"Total number of tokens in limit_context: {count_tokens(limit_context)}")
+        logging.info(
+            f"Total number of words in limit_context: {len(limit_context.split(' '))}"
+        )
 
         response = generate_response(query, limit_context)
         return JSONResponse({"answer": response})
