@@ -9,14 +9,16 @@ from datetime import datetime
 
 # 1) Define IST timezone and converter
 IST = pytz.timezone("Asia/Kolkata")
+
+
 def ist_time(*args):
     return datetime.now(IST).timetuple()
+
 
 # 2) Create a handler and formatter
 handler = logging.StreamHandler()
 formatter = logging.Formatter(
-    fmt="%(asctime)s %(levelname)s: %(message)s",
-    datefmt="%d-%m-%Y %H:%M:%S"
+    fmt="%(asctime)s %(levelname)s: %(message)s", datefmt="%d-%m-%Y %H:%M:%S"
 )
 formatter.converter = ist_time
 handler.setFormatter(formatter)
@@ -34,6 +36,7 @@ try:
 except KeyError:
     # fallback for custom or unrecognized model names
     encoder = tiktoken.get_encoding("cl100k_base")
+
 
 def count_tokens(text: str) -> int:
     """Return the number of tokens in a string, using your model's tokenizer."""
@@ -73,31 +76,40 @@ async def ask_question(request: Request):
     try:
         logging.info("\n")
         data = await request.json()
+
         query = data.get("query")
+        logging.info(f"Received query:\n{query}")
         if not query:
             return JSONResponse({"error": "Query cannot be empty"}, status_code=400)
-        retrieved_transcripts = retrieve_transcripts(
-            query, file_paths, transcripts, 15
-        )
+        
+        retrieved_transcripts = retrieve_transcripts(query, file_paths, transcripts, 15)
         if not retrieved_transcripts:
             return JSONResponse(
                 {"error": "No relevant transcripts found"}, status_code=404
             )
-
+        
         full_context = " ".join(retrieved_transcripts)
-        logging.info(f"Total number of tokens in full_context: {count_tokens(full_context)}")
+        logging.info(
+            f"Total number of tokens in full_context: {count_tokens(full_context)}"
+        )
         logging.info(
             f"Total number of words in full_context: {len(full_context.split(' '))}"
         )
 
         limit_context = trim_to_token_limit(full_context, MAX_CONTEXT_TOKENS)
-        logging.info(f"Total number of tokens in limit_context: {count_tokens(limit_context)}")
+        logging.info(
+            f"Total number of tokens in limit_context: {count_tokens(limit_context)}"
+        )
         logging.info(
             f"Total number of words in limit_context: {len(limit_context.split(' '))}"
         )
+        logging.info(f"Context:\n{limit_context}")
 
         response = generate_response(query, limit_context)
+        logging.info(f"Response:\n{response}")
+
         return JSONResponse({"answer": response})
+
     except Exception as e:
         logging.error(f"Internal error: {e}\n{traceback.format_exc()}")
         return JSONResponse(
