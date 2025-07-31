@@ -1,4 +1,4 @@
-import os, sys, logging, pickle
+import os, sys, logging, pickle, tiktoken
 from utils.download_vtt import download_vtt
 from utils.vtt_to_txt import vtt_to_txt
 from utils.preprocess import clean_txt, preprocess
@@ -15,7 +15,8 @@ from config import (
     RESPONSE_FILE,
     FILE_PATHS,
     TRANSCRIPTS,
-    MAX_CONTEXT_WORDS,
+    MAX_CONTEXT_TOKENS,
+    MODEL
 )
 
 import pytz
@@ -78,12 +79,35 @@ def get_user_query():
 
 def retrieve_contexts(query, file_paths, transcripts):
     retrieved_transcripts = retrieve_transcripts(
-        query, file_paths, transcripts, 10
+        query, file_paths, transcripts, 20
     )
     if not retrieved_transcripts:
         logging.warning("No transcripts retrieved.")
         return None
     return retrieved_transcripts
+
+
+try:
+    encoder = tiktoken.encoding_for_model(MODEL)
+except KeyError:
+    # fallback for custom or unrecognized model names
+    encoder = tiktoken.get_encoding("cl100k_base")
+
+
+def count_tokens(text: str) -> int:
+    """Return the number of tokens in a string, using your model's tokenizer."""
+    return len(encoder.encode(text))
+
+
+def trim_to_token_limit(text: str, max_tokens: int) -> str:
+    """
+    If text exceeds max_tokens, cut it down to the first max_tokens tokens.
+    """
+    tokens = encoder.encode(text)
+    if len(tokens) <= max_tokens:
+        return text
+    # decode only the first max_tokens tokens back into a string
+    return encoder.decode(tokens[:max_tokens])
 
 
 def write_response(response):
@@ -128,8 +152,24 @@ if __name__ == "__main__":
 
     full_context = " ".join(retrieved_transcripts)
     logging.info(
-        f"Number of characters in retrieved_transcripts separated by space: {len(full_context.split(' '))}"
+        f"Total number of tokens in full_context: {count_tokens(full_context)}"
     )
-    limit_context = " ".join(full_context.split(" ")[:MAX_CONTEXT_WORDS])
+    logging.info(
+        f"Total number of words in full_context: {len(full_context.split(' '))}"
+    )
+    limit_context = trim_to_token_limit(full_context, MAX_CONTEXT_TOKENS)
+    logging.info(
+        f"Total number of tokens in limit_context: {count_tokens(limit_context)}"
+    )
+    logging.info(
+        f"Total number of words in limit_context: {len(limit_context.split(' '))}"
+    )
+
     response = generate_response(query, limit_context)
+
+    logging.info(f"Received query: {query}")
+    context_str = ' '.join(limit_context.split('\n'))
+    logging.info(f"Context: {context_str}")
+    logging.info(f"Response: {response}")
+
     write_response(response)
