@@ -2,12 +2,8 @@ name: Keep HF Space Awake
 
 on:
   schedule:
-    # First run at 02:00 UTC every other day
-    - cron: '0 2 */2 * *'
-    # Second run at 20:00 UTC on odd-numbered days
-    - cron: '0 20 1-31/2 * *'
-
-  workflow_dispatch:         # allows manual run from Actions UI
+    - cron: '0 2 * * *'   # Run once daily at 02:00 UTC
+  workflow_dispatch:       # Manual trigger if needed
 
 jobs:
   ping:
