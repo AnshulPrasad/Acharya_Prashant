@@ -1,9 +1,9 @@
-fastapi==0.115.12
-uvicorn==0.34.3
-requests==2.32.3
-transformers==4.52.4
-sentence-transformers==4.1.0
-faiss-cpu==1.11.0
-openai==1.86.0
+fastapi==0.116.1
+uvicorn==0.35.0
+requests==2.32.5
+transformers==4.56.0
+sentence-transformers==5.1.0
+faiss-cpu==1.9.0
+openai==1.102.0
 pytz==2025.2
 tiktoken==0.9.0
