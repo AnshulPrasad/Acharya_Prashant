@@ -32,7 +32,7 @@ def download_vtt(
         logging.info(f"Found video IDs: {video_ids}\n")
 
     except Exception as e:
-        logging.error("Error listing videos: {e}")
+        logging.error(f"Error listing videos: {e}")
         return
 
     for video_id in video_ids:
