@@ -4,8 +4,12 @@ WORKDIR /code
 
 COPY . .
 
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir \
+    torch torchvision torchaudio \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r requirements.txt
+
 
 
 ENV HF_HOME=/tmp/.cache
