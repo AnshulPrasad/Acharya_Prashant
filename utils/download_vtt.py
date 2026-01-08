@@ -1,14 +1,12 @@
-import subprocess, os, logging, time, json
+import subprocess
+from pathlib import Path
 
-logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
 
-
-def download_vtt(
+def download_channel_subtitles(
     channel_url: str,
-    output_dir: str,
-    language="en",
-    cookies_file="www.youtube.com_cookies.txt",
-):
+    output_dir: Path,
+    language: str = "en",
+) -> None:
     """
     Download subtitles of all the videos from a Youtube channel
 
@@ -16,95 +14,26 @@ def download_vtt(
         channel_url (str): url of the youtube channel
         output_dir (str): output directory where the subtitles will be stored
         language (str): laguage of the subtile to be retrieved
-        cookies_file (str): the cookie file to bipass the authentication in age restricted content
     """
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
+    cmd = [
+        "yt-dlp",
+        "--skip-download",
+        "--write-subs",
+        "--write-auto-subs",
+        "--sub-lang", language,
+        "--sub-format", "vtt",
+        "--js-runtimes", "node",
+        "--limit-rate", "500K",
+        "--sleep-interval", "10",
+        "--max-sleep-interval", "30",
+        "--retries", "infinite",
+        "--fragment-retries", "infinite",
+        "--retry-sleep", "429:60",
+        "--download-archive", str(output_dir / "archive.txt"),
+        "-o", str(output_dir / "%(id)s.%(ext)s"),
+        channel_url,
+    ]
 
-    command_list = ["yt-dlp", "--flat-playlist", "--get-id", channel_url]
-
-    try:
-        result = subprocess.run(
-            command_list, capture_output=True, text=True, check=True
-        )
-        video_ids = result.stdout.strip().split("\n")
-        logging.info(f"Found video IDs: {video_ids}\n")
-
-    except Exception as e:
-        logging.error(f"Error listing videos: {e}")
-        return
-
-    for video_id in video_ids:
-        subtitle_path = os.path.join(output_dir, f"{video_id}.{language}.vtt")
-        if os.path.exists(subtitle_path):
-            logging.info(f"Skipping already downloaded video: {video_id}")
-            continue
-
-        # 1. Get metadata for the video
-        meta_cmd = ["yt-dlp", "-J", f"https://www.youtube.com/watch?v={video_id}"]
-        try:
-            meta_result = subprocess.run(
-                meta_cmd, capture_output=True, text=True, check=True
-            )
-            meta = meta_result.stdout
-
-            info = json.loads(meta)
-        except Exception as e:
-            logging.warning(f"Could not fetch metadata for {video_id}: {e}")
-            continue
-
-        # 2. Check for manual or auto subtitles
-        has_manual = language in (info.get("subtitles") or {})
-        has_auto = language in (info.get("automatic_captions") or {})
-
-        if has_manual:
-            logging.info(
-                f"Manual {language} subtitles available for {video_id}, downloading..."
-            )
-            command = [
-                "yt-dlp",
-                "--write-sub",
-                "--sub-lang",
-                language,
-                "--skip-download",
-                "--cookies",
-                cookies_file,
-                "-o",
-                f"{output_dir}/{video_id}.%(ext)s",
-                f"https://www.youtube.com/watch?v={video_id}",
-            ]
-        elif has_auto:
-            logging.info(
-                f"Only auto {language} subtitles available for {video_id}, downloading..."
-            )
-            command = [
-                "yt-dlp",
-                "--write-auto-sub",
-                "--sub-lang",
-                language,
-                "--skip-download",
-                "--cookies",
-                cookies_file,
-                "-o",
-                f"{output_dir}/{video_id}.%(ext)s",
-                f"https://www.youtube.com/watch?v={video_id}",
-            ]
-        else:
-            logging.warning(
-                f"No {language} subtitles (manual or auto) for video: {video_id}\n"
-            )
-            continue
-
-        try:
-            subprocess.run(command, check=True)
-            if os.path.exists(subtitle_path):
-                logging.info(f"Subtitle downloaded for video: {video_id}\n")
-            else:
-                logging.warning(
-                    f"Subtitle download command ran but file not found for video: {video_id}\n"
-                )
-        except Exception as e:
-            logging.warning(f"Subtitle download failed for video: {video_id}: {e}\n")
-
-        time.sleep(2)
+    subprocess.run(cmd, check=True)
