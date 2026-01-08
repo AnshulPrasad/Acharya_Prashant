@@ -1,33 +1,36 @@
-import os
 import logging
-from utils.preprocess import extract_transcript
+from pathlib import Path
+from utils.preprocess import vtt_to_clean_text
 
-logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-def vtt_to_txt(vtt_dir: str, txt_dir: str):
+def vtt_to_txt(
+    vtt_dir: Path,
+    txt_dir: Path,
+) -> None:
     """
     Convert Youtube file format .vtt (WebVTT or Web Video Text to Track) to text file format .txt
 
     Args:
-        vtt_dir (str): directory which contain all the .vtt files
-        txt_dir (str): directory in which the converted .txt files will be saved
+        vtt_dir (Path): directory which contain all the .vtt files
+        txt_dir (Path): directory in which the converted .txt files will be saved
     """
 
-    if not os.path.exists(txt_dir):
-        os.makedirs(txt_dir)
+    txt_dir.mkdir(parents=True, exist_ok=True)
 
-    for file_name in os.listdir(vtt_dir):
-        if file_name.endswith(".vtt"):
+    for vtt_path in vtt_dir.glob("*.vtt"):
 
-            vtt_file = os.path.join(vtt_dir, file_name)
-            txt_file = os.path.join(txt_dir, os.path.splitext(file_name)[0] + ".txt")
+        txt_path = txt_dir / vtt_path.with_suffix(".txt").name
 
-            if os.path.exists(txt_file):
-                continue
+        if txt_path.exists():
+            logger.info("Skipping %s (already exists)", txt_path.name)
+            continue
 
-            extract_transcript(vtt_file, txt_file)
+        vtt_to_clean_text(vtt_path, txt_path)
 
-    logging.info(
-        f"Completed {os.path.basename(vtt_dir)} to {os.path.basename(txt_dir)} conversion."
+    logger.info(
+        "Completed %s → %s conversion",
+        vtt_dir.name,
+        txt_dir.name,
     )
