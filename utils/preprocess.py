@@ -103,3 +103,10 @@ def deduplicate_consecutive_lines(
         file_path.write_text("\n".join(cleaned) + "\n", encoding="utf-8")
 
     logger.info("Removed consecutive duplicates in %s", txt_dir)
+
+
+def count_tokens(text: str, encoder) -> int:
+    """Return the number of tokens in a string, using your model's tokenizer."""
+    if not text:
+        return 0
+    return len(encoder.encode(text))
