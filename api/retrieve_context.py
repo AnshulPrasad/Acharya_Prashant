@@ -11,12 +11,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 index = faiss.read_index(TRANSCRIPT_INDEX)
 
 
-def retrieve_transcripts(
-    query: str,
-    file_paths: list[Path],
-    transcripts: list[str],
-    top_k: int = 3,
-) -> list[str]:
+def retrieve_transcripts(query: str, file_paths: list[Path], transcripts: list[str], top_k: int = 3) -> list[str]:
     query_embedding = model.encode([query])
     distances, indices = index.search(query_embedding, top_k)
 

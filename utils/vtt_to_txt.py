@@ -5,10 +5,7 @@ from utils.preprocess import vtt_to_clean_text
 logger = logging.getLogger(__name__)
 
 
-def vtt_to_txt(
-    vtt_dir: Path,
-    txt_dir: Path,
-) -> None:
+def vtt_to_txt(vtt_dir: Path, txt_dir: Path) -> None:
     """
     Convert Youtube file format .vtt (WebVTT or Web Video Text to Track) to text file format .txt
 
@@ -20,7 +17,6 @@ def vtt_to_txt(
     txt_dir.mkdir(parents=True, exist_ok=True)
 
     for vtt_path in vtt_dir.glob("*.vtt"):
-
         txt_path = txt_dir / vtt_path.with_suffix(".txt").name
 
         if txt_path.exists():
@@ -29,8 +25,4 @@ def vtt_to_txt(
 
         vtt_to_clean_text(vtt_path, txt_path)
 
-    logger.info(
-        "Completed %s → %s conversion",
-        vtt_dir.name,
-        txt_dir.name,
-    )
+    logger.info("Completed %s → %s conversion", vtt_dir.name, txt_dir.name)

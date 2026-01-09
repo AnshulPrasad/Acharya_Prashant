@@ -4,9 +4,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
-def load_text_corpus(
-    txt_dir: Path,
-) -> tuple[list[Path], list[str]]:
+def load_text_corpus(txt_dir: Path) -> tuple[list[Path], list[str]]:
     """
     Load a corpus of text files from a directory.
 
@@ -51,10 +49,7 @@ KEYWORDS = {
 }
 
 
-def vtt_to_clean_text(
-    vtt_file: Path,
-    txt_file: Path,
-) -> None:
+def vtt_to_clean_text(vtt_file: Path, txt_file: Path) -> None:
     """
     Convert a WebVTT subtitle file into cleaned plain text.
 
@@ -63,9 +58,7 @@ def vtt_to_clean_text(
     Output is written line by line in UTF-8 encoding.
     """
 
-    with vtt_file.open("r", encoding="utf-8") as vtt, txt_file.open(
-        "w", encoding="utf-8"
-    ) as txt:
+    with vtt_file.open("r", encoding="utf-8") as vtt, txt_file.open("w", encoding="utf-8") as txt:
 
         for line in vtt:
             stripped = line.strip()
@@ -79,9 +72,7 @@ def vtt_to_clean_text(
     logger.info("Converted %s → %s", vtt_file.name, txt_file.name)
 
 
-def deduplicate_consecutive_lines(
-    txt_dir: Path,
-) -> None:
+def deduplicate_consecutive_lines(txt_dir: Path) -> None:
     """
     Remove consecutive duplicate lines from text files in a directory.
 

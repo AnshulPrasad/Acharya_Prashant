@@ -2,11 +2,7 @@ import subprocess
 from pathlib import Path
 
 
-def download_channel_subtitles(
-    channel_url: str,
-    output_dir: Path,
-    language: str = "en",
-) -> None:
+def download_channel_subtitles(channel_url: str, output_dir: Path, language: str = "en") -> None:
     """
     Download subtitles of all the videos from a Youtube channel
 
@@ -22,17 +18,28 @@ def download_channel_subtitles(
         "--skip-download",
         "--write-subs",
         "--write-auto-subs",
-        "--sub-lang", language,
-        "--sub-format", "vtt",
-        "--js-runtimes", "node",
-        "--limit-rate", "500K",
-        "--sleep-interval", "10",
-        "--max-sleep-interval", "30",
-        "--retries", "infinite",
-        "--fragment-retries", "infinite",
-        "--retry-sleep", "429:60",
-        "--download-archive", str(output_dir / "archive.txt"),
-        "-o", str(output_dir / "%(id)s.%(ext)s"),
+        "--sub-lang",
+        language,
+        "--sub-format",
+        "vtt",
+        "--js-runtimes",
+        "node",
+        "--limit-rate",
+        "500K",
+        "--sleep-interval",
+        "10",
+        "--max-sleep-interval",
+        "30",
+        "--retries",
+        "infinite",
+        "--fragment-retries",
+        "infinite",
+        "--retry-sleep",
+        "429:60",
+        "--download-archive",
+        str(output_dir / "archive.txt"),
+        "-o",
+        str(output_dir / "%(id)s.%(ext)s"),
         channel_url,
     ]
 

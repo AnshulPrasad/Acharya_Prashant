@@ -3,7 +3,7 @@ from openai import OpenAI
 import tiktoken
 
 from utils.token import count_tokens
-from config import API_URL, MODEL, GH_API_TOKEN
+from config import API_URL, MODEL, GH_API_TOKEN, SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,7 @@ except Exception as e:
     client = None
 
 
-def generate_response(
-    query: str,
-    context: str,
-) -> str:
+def generate_response(query: str, context: str) -> str:
 
     if client is None:
         return "Error: AI client not configured."
@@ -38,7 +35,7 @@ def generate_response(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant.",
+                    "content": SYSTEM_PROMPT,
                 },
                 {
                     "role": "user",
@@ -53,7 +50,6 @@ def generate_response(
 
         # Extract text defensively (depends on SDK return shape)
         try:
-
             response = response.choices[0].message.content
         except Exception as e:
             response = getattr(response, "text", None) or str(response)
