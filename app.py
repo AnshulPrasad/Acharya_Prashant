@@ -11,18 +11,10 @@ from api.retrieve_context import retrieve_transcripts
 from utils.token import count_tokens, trim_to_token_limit
 from config import FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_TOKENS
 
-logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Or specify your frontend's URL for more security
-    allow_credentials=True,
-    allow_methods=["POST"],
-    allow_headers=["*"],
-)
-
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["POST"], allow_headers=["*"])
 
 with open(FILE_PATHS, "rb") as f:
     file_paths = pickle.load(f)
@@ -41,28 +33,21 @@ async def ask_question(request: Request):
 
         retrieved_transcripts = retrieve_transcripts(query, file_paths, transcripts, 15)
         if not retrieved_transcripts:
-            return JSONResponse(
-                {"error": "No relevant transcripts found"}, status_code=404
-            )
+            return JSONResponse({"error": "No relevant transcripts found"}, status_code=404)
 
         full_context = " ".join(retrieved_transcripts)
-        logging.info("Full_context:- Tokens: %d Words: %d", count_tokens(full_context), len(full_context.split(" ")))
-
         limit_context = trim_to_token_limit(full_context, MAX_CONTEXT_TOKENS)
-        logging.info("Limit_context:- Tokens: %d Words: %d", count_tokens(limit_context), len(limit_context.split(" ")))
-
+        context_str = " ".join(limit_context.split("\n"))
         response = generate_response(query, limit_context)
 
-        context_str = " ".join(limit_context.split("\n"))
-        logging.info("Received query: %s\nContex: %s\nResponse: %s", query, context_str, response)
+        logger.info("Full_context: Tokens=%d, Words=%d", count_tokens(full_context), len(full_context.split(" ")))
+        logger.info("Limit_context: Tokens=%d, Words=%d", count_tokens(limit_context), len(limit_context.split(" ")))
 
         return JSONResponse({"answer": response})
 
     except Exception as e:
-        logging.exception("Internal error: %s",e)
-        return JSONResponse(
-            {"error": "Internal server error. Please try again later."}, status_code=500
-        )
+        logger.exception("Internal error: %s",e)
+        return JSONResponse({"error": "Internal server error. Please try again later."}, status_code=500)
 
 # Serve frontend from 'frontend/' directory
 frontend_path = os.path.join(os.path.dirname(__file__), "frontend")
