@@ -1,29 +1,22 @@
-import faiss, logging, os
+import faiss
+import logging
+from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
-logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-def embedding(transcripts, transcript_index):
-    logging.info("Starting embedding of transcripts...")
-    embedding_model = SentenceTransformer(
-        "all-MiniLM-L6-v2"
-    )
-    logging.info("Loaded embedding model.")
-
-    transcripts_embeddings = embedding_model.encode(
-        transcripts, convert_to_tensor=False, show_progress_bar=True
-    )
-    logging.info(f"Generated embeddings for {len(transcripts)} transcripts.")
-
-    dimension = transcripts_embeddings[0].shape[0]
+def embedding(
+    transcripts: list[str],
+    transcript_index: Path,
+) -> None:
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    embeddings = model.encode(transcripts, show_progress_bar=True)
+    dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
-    logging.info("Initialized FAISS index.")
+    index.add(embeddings)
 
-    index.add(transcripts_embeddings)
-    logging.info("Added embeddings to FAISS index.")
+    transcript_index.mkdir(parents=True, exist_ok=True)
+    faiss.write_index(index, str(transcript_index))
 
-
-    os.makedirs(os.path.dirname(transcript_index), exist_ok=True)
-    faiss.write_index(index, transcript_index)
-    logging.info(f"FAISS index written to {transcript_index}.\n")
+    logger.info("Embedding completed.\n")
