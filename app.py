@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+import sys
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,15 +12,26 @@ from api.retrieve_context import retrieve_transcripts
 from utils.token import count_tokens, trim_to_token_limit
 from config import FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_TOKENS
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [%(name)s]: %(message)s", handlers=[logging.StreamHandler(sys.stdout)])
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["POST"], allow_headers=["*"])
 
-with open(FILE_PATHS, "rb") as f:
-    file_paths = pickle.load(f)
-with open(TRANSCRIPTS, "rb") as f:
-    transcripts = pickle.load(f)
+file_paths = []
+transcripts = []
+
+@app.on_event("startup")
+def load_data():
+    global file_paths, transcripts
+    logger.info("Loading transcripts")
+
+    with open(FILE_PATHS, "rb") as f:
+        file_paths = pickle.load(f)
+    with open(TRANSCRIPTS, "rb") as f:
+        transcripts = pickle.load(f)
+
+    logger.info("Loaded %d transcripts", len(transcripts))
 
 
 @app.post("/ask")
