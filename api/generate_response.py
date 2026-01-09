@@ -2,7 +2,7 @@ import logging
 from openai import OpenAI
 import tiktoken
 
-from utils.preprocess import count_tokens
+from utils.token import count_tokens
 from config import API_URL, MODEL, GH_API_TOKEN
 
 logger = logging.getLogger(__name__)
