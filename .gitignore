@@ -2,3 +2,5 @@ __pycache__
 data/subtitles_vtt
 data/transcripts_txt
 .vscode/settings.json
+.venv
+.idea

@@ -74,8 +74,15 @@ def main() -> None:
     
     stage_download()
     file_paths, transcripts = stage_preprocess()
-    stage_embed(transcripts)
     stage_persist(file_paths, transcripts)
+
+    with open(FILE_PATHS, "rb") as f:
+        file_paths = pickle.load(f)
+    with open(TRANSCRIPTS, "rb") as f:
+        transcripts = pickle.load(f)
+    file_paths = [Path(p) for p in file_paths]
+
+    stage_embed(transcripts)
 
     retrieved = stage_retrieve(query, file_paths, transcripts)
     if not retrieved:
