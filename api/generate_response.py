@@ -1,64 +1,63 @@
 import logging
-import os
-from llama_cpp import Llama
+from openai import OpenAI
+import tiktoken
 
 from utils.token import count_tokens
-from config import SYSTEM_PROMPT
+from config import API_URL, MODEL, GH_API_TOKEN, SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
-llm = None
+try:
+    encoder = tiktoken.encoding_for_model(MODEL)
+except KeyError:
+    # fallback for custom or unrecognized model names
+    encoder = tiktoken.get_encoding("cl100k_base")
 
-def load_model_at_startup():
-    global llm
-    try:
-        logger.info("Loading Qwen2.5-1.5B model into RAM...")
+try:
+    client = OpenAI(base_url=API_URL, api_key=GH_API_TOKEN, timeout=60)
+    logging.info("OpenAI client initialized.")
+except Exception as e:
+    logging.critical("Failed to initialize OpenAI client as %s", e)
+    client = None
 
-        llm = Llama.from_pretrained(
-            repo_id="Qwen/Qwen2.5-1.5B-Instruct-GGUF",
-            filename="qwen2.5-1.5b-instruct-q4_k_m.gguf",
-            n_threads=4,
-            n_gpu_layers=0,  # CPU only (safe for HF Spaces)
-            verbose=True,
-            n_ctx=4096,  # plenty for your RAG context
-        )
-        logger.info("Qwen2.5-1.5B model loaded into RAM successfully.")
-
-    except Exception as e:
-        logger.error("Failed to load model: %s", e)
-        llm = None
 
 def generate_response(query: str, context: str) -> str:
 
-    if llm is None:
-        return "Error: Model not loaded.."
+    if client is None:
+        return "Error: AI client not configured."
 
     prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
     logging.info("Total number of tokens in prompt: %s", count_tokens(prompt))
 
     try:
-        full_prompt = (
-            f"<|im_start|>system\n{SYSTEM_PROMPT}<|im_end|>\n"
-            f"<|im_start|>user\n{prompt}<|im_end|>\n"
-            f"<|im_start|>assistant\n"
-        )
-        answer = llm(
-            full_prompt,
-            max_tokens=512,
-            temperature=0.25,
-            top_p=0.95,
-            stop=["<|im_end|>", "<|im_start|>"],
-            echo=False
-        )
-        answer = answer["choices"][0]["text"].strip()
 
-        if not answer:
-            logger.warning("Failed to generate response. Returning empty response.")
-            return "I couldn't generate response. Please try again."
+        response = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            temperature=1,
+            top_p=1,
+            model=MODEL,
+            stream=False,
+        )
 
-        logging.info('Answer Generation Succeeded.')
-        return answer
+        # Extract text defensively (depends on SDK return shape)
+        try:
+            response = response.choices[0].message.content
+        except Exception as e:
+            response = getattr(response, "text", None) or str(response)
+            logging.warning("Fallback used for response parsing as %s", e)
+
+        logging.info("Answer generation succeeded.")
+        return response
 
     except Exception as e:
-        logger.error("Failed to generate response: %s", e)
+        logging.error("Error during API call as %s", e)
         return "Sorry, there was an error generating the response."
