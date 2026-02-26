@@ -29,7 +29,7 @@ dependencies = [
 requires-dist = [
     { name = "faiss-cpu", specifier = "==1.9.0" },
     { name = "fastapi", specifier = "==0.116.1" },
-    { name = "llama-cpp-python", specifier = "==0.2.85" },
+    { name = "llama-cpp-python", specifier = "==0.3.4" },
     { name = "pytz", specifier = "==2025.2" },
     { name = "sentence-transformers", specifier = "==3.0.1" },
     { name = "tiktoken", specifier = ">=0.12.0" },
@@ -314,7 +314,7 @@ wheels = [
 
 [[package]]
 name = "llama-cpp-python"
-version = "0.2.85"
+version = "0.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "diskcache" },
@@ -322,7 +322,7 @@ dependencies = [
     { name = "numpy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7d/a8/3a63797e89bb11ce81a2305dfac0a2f0a3285add86c83c33e493db2b169a/llama_cpp_python-0.2.85.tar.gz", hash = "sha256:31476c2f4331784d3681f9bcd366cc4666ba97ab128bffbd23cb90ee2cebff21", size = 49305965, upload-time = "2024-07-31T16:26:38.069Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/af/07/6e9e19cf88bee4986f53f5310205364baae22cb31122ebf4c36ac6152b15/llama_cpp_python-0.3.4.tar.gz", hash = "sha256:52b37129c282753edf89213e852b8b46664b059116ae2213da9cb4a45374d23d", size = 64461957, upload-time = "2024-12-09T04:55:45.705Z" }
 
 [[package]]
 name = "markupsafe"
