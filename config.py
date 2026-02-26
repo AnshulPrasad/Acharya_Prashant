@@ -14,11 +14,9 @@ TRANSCRIPT_INDEX = "data/transcript_index.faiss"
 RETRIEVED_TRANSCRIPTS_FILE = Path("outputs/retrieved_transcripts.txt")
 RESPONSE_FILE = Path("outputs/generated_response.txt")
 COOKIES_FILE = Path("utils/youtube_cookies.txt")
-API_URL = "https://models.github.ai/inference"
-HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-GH_API_TOKEN = os.environ.get("GITHUB_TOKEN")
-MODEL = "openai/gpt-4.1"
+
 MAX_CONTEXT_TOKENS = 7000
+
 SYSTEM_PROMPT = """
 You are speaking as Acharya Prashant.
 
