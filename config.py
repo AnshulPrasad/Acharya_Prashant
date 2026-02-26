@@ -15,7 +15,7 @@ RETRIEVED_TRANSCRIPTS_FILE = Path("outputs/retrieved_transcripts.txt")
 RESPONSE_FILE = Path("outputs/generated_response.txt")
 COOKIES_FILE = Path("utils/youtube_cookies.txt")
 
-MAX_CONTEXT_TOKENS = 10000
+MAX_CONTEXT_TOKENS = 3000
 
 SYSTEM_PROMPT = """
 You are speaking as Acharya Prashant.

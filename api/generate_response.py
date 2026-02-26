@@ -20,7 +20,7 @@ def load_model_at_startup():
             n_threads=4,
             n_gpu_layers=0,  # CPU only (safe for HF Spaces)
             verbose=True,
-            n_ctx=16384,  # plenty for your RAG context
+            n_ctx=4096,  # plenty for your RAG context
         )
         logger.info("Qwen2.5-1.5B model loaded into RAM successfully.")
 
@@ -37,12 +37,17 @@ def generate_response(query: str, context: str) -> str:
     logging.info("Total number of tokens in prompt: %s", count_tokens(prompt))
 
     try:
+        full_prompt = (
+            f"<|im_start|>system\n{SYSTEM_PROMPT}<|im_end|>\n"
+            f"<|im_start|>user\n{prompt}<|im_end|>\n"
+            f"<|im_start|>assistant\n"
+        )
         answer = llm(
-            f"[SYSTEM]{SYSTEM_PROMPT}[/SYSTEM]\n{prompt}",
-            max_tokens=2000,
-            temperature=1.0,
-            top_p=1.0,
-            stop=["<|end|>", "Question:", "<|user|>"],
+            full_prompt,
+            max_tokens=512,
+            temperature=0.25,
+            top_p=0.95,
+            stop=["<|im_end|>", "<|im_start|>"],
             echo=False
         )
         answer = answer["choices"][0]["text"].strip()
@@ -55,5 +60,5 @@ def generate_response(query: str, context: str) -> str:
         return answer
 
     except Exception as e:
-        logger.error("Failed to load model: %s", e)
+        logger.error("Failed to generate response: %s", e)
         return "Sorry, there was an error generating the response."
