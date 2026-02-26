@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from api.generate_response import generate_response
+from api.generate_response import generate_response, load_model_at_startup
 from api.retrieve_context import retrieve_transcripts
 from utils.token import count_tokens, trim_to_token_limit
 from config import FILE_PATHS, TRANSCRIPTS, MAX_CONTEXT_TOKENS
@@ -30,6 +30,8 @@ def load_data():
         file_paths = pickle.load(f)
     with open(TRANSCRIPTS, "rb") as f:
         transcripts = pickle.load(f)
+
+    load_model_at_startup()
 
     logger.info("Loaded %d transcripts", len(transcripts))
 
