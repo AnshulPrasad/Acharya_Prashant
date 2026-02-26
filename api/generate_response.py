@@ -47,5 +47,5 @@ def generate_response(query: str, context: str) -> str:
         return answer
 
     except Exception as e:
-        logging.error("Error during inference",)
+        logger.error("Failed to load model: %s", e)
         return "Sorry, there was an error generating the response."
