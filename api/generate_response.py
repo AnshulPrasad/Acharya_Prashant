@@ -1,63 +1,51 @@
 import logging
-from openai import OpenAI
-import tiktoken
+import os
+from llama_cpp import Llama
 
 from utils.token import count_tokens
-from config import API_URL, MODEL, GH_API_TOKEN, SYSTEM_PROMPT
+from config import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
-try:
-    encoder = tiktoken.encoding_for_model(MODEL)
-except KeyError:
-    # fallback for custom or unrecognized model names
-    encoder = tiktoken.get_encoding("cl100k_base")
+llm = None
 
-try:
-    client = OpenAI(base_url=API_URL, api_key=GH_API_TOKEN, timeout=60)
-    logging.info("OpenAI client initialized.")
-except Exception as e:
-    logging.critical("Failed to initialize OpenAI client as %s", e)
-    client = None
+def load_model_at_startup():
+    global llm
+    try:
+        logger.info("Loading model into RAM...")
 
+        llm = Llama.from_pretrained(
+            repo_id="TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF",
+            filename="tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+            verbose=False,
+            n_gpu_layers=0,  # CPU only (safe for HF Spaces)
+            n_ctx=2048,
+        )
+        logger.info("Model loaded into RAM successfully.")
 
+    except Exception as e:
+        logger.error("Failed to load model: %s", e)
+        llm = None
 def generate_response(query: str, context: str) -> str:
 
-    if client is None:
-        return "Error: AI client not configured."
+    if llm is None:
+        return "Error: Model not loaded.."
 
     prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
     logging.info("Total number of tokens in prompt: %s", count_tokens(prompt))
 
     try:
-
-        response = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT,
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ],
-            temperature=1,
-            top_p=1,
-            model=MODEL,
-            stream=False,
+        answer = llm(
+            f"[SYSTEM]{SYSTEM_PROMPT}[/SYSTEM]\n{prompt}",
+            max_tokens=7000,
+            temperature=1.0,
+            top_p=1.0,
+            stop=["Question:", "Context:"]
         )
-
-        # Extract text defensively (depends on SDK return shape)
-        try:
-            response = response.choices[0].message.content
-        except Exception as e:
-            response = getattr(response, "text", None) or str(response)
-            logging.warning("Fallback used for response parsing as %s", e)
-
-        logging.info("Answer generation succeeded.")
-        return response
+        answer = answer["choices"][0]["text"].strip()
+        logging.info('Answer Generation Succeeded.')
+        return answer
 
     except Exception as e:
-        logging.error("Error during API call as %s", e)
+        logging.error("Error during inference",)
         return "Sorry, there was an error generating the response."
