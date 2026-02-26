@@ -1,9 +1,9 @@
 import logging
-from openai import OpenAI
+from groq import Groq
 import tiktoken
 
 from utils.token import count_tokens
-from config import API_URL, MODEL, GH_API_TOKEN, SYSTEM_PROMPT
+from config import API_URL, MODEL, GROQ_API_KEY, SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ except KeyError:
     encoder = tiktoken.get_encoding("cl100k_base")
 
 try:
-    client = OpenAI(base_url=API_URL, api_key=GH_API_TOKEN, timeout=60)
+    client = Groq(api_key=GROQ_API_KEY)
     logging.info("OpenAI client initialized.")
 except Exception as e:
     logging.critical("Failed to initialize OpenAI client as %s", e)
