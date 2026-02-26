@@ -17,7 +17,7 @@ def load_model_at_startup():
         llm = Llama.from_pretrained(
             repo_id="microsoft/Phi-3-mini-4k-instruct-gguf",
             filename="Phi-3-mini-4k-instruct-q4.gguf",
-            verbose=False,
+            verbose=True,
             n_gpu_layers=0,  # CPU only (safe for HF Spaces)
             n_ctx=4096,
         )
