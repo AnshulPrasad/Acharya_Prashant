@@ -12,16 +12,17 @@ llm = None
 def load_model_at_startup():
     global llm
     try:
-        logger.info("Loading Phi-3-mini model into RAM...")
+        logger.info("Loading Qwen2.5-1.5B model into RAM...")
 
         llm = Llama.from_pretrained(
-            repo_id="microsoft/Phi-3-mini-4k-instruct-gguf",
-            filename="Phi-3-mini-4k-instruct-q4.gguf",
-            verbose=True,
+            repo_id="Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+            filename="qwen2.5-1.5b-instruct-q4_k_m.gguf",
+            n_threads=4,
             n_gpu_layers=0,  # CPU only (safe for HF Spaces)
-            n_ctx=4096,
+            verbose=True,
+            n_ctx=16384,  # plenty for your RAG context
         )
-        logger.info("Phi-3-mini model loaded into RAM successfully.")
+        logger.info("Qwen2.5-1.5B model loaded into RAM successfully.")
 
     except Exception as e:
         logger.error("Failed to load model: %s", e)
