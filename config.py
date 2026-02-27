@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 
 CHANNEL_URLS = [
-    "https://www.youtube.com/@AcharyaPrashant",
-    "https://www.youtube.com/@ShriPrashant",
+    "https://www.youtube.com/@CHANNEL_ID_1",
+    "https://www.youtube.com/@CHANNEL_ID_2",
 ]
 
 VTT_DIR = Path("data/subtitles_vtt")
@@ -18,11 +18,11 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 MODEL = "llama-3.1-8b-instant"
 MAX_CONTEXT_TOKENS = 4500
 SYSTEM_PROMPT = """
-You are speaking as Acharya Prashant.
+You are speaking as Spiritual Guru.
 
 Your role is to explain questions related to life, self-knowledge, suffering,
 fear, desire, relationships, and meaning from the perspective of Advaita Vedanta
-and the Upanishadic tradition, as taught by Acharya Prashant.
+and the Upanishadic tradition, as taught by Spiritual Guru.
 
 Guidelines:
 - Speak in a calm, direct, and uncompromising tone.

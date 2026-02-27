@@ -1,16 +1,6 @@
----
-title: ask Acharya Prashant
-emoji: 📚
-colorFrom: indigo
-colorTo: blue
-sdk: docker
-app_file: app.py
-pinned: false
----
+# RAG Q&A Assistant
 
-# Acharya Prashant RAG Assistant
-
-A retrieval-augmented question-answering (RAG) system built on Acharya Prashant's YouTube subtitles.
+A retrieval-augmented question-answering (RAG) system built on curated YouTube subtitle transcripts.
 
 The project provides:
 - A FastAPI backend (`/ask`) for question answering.
@@ -39,7 +29,7 @@ The project provides:
 2. Query is embedded using `all-MiniLM-L6-v2`.
 3. Top-K transcript chunks are retrieved from the FAISS index.
 4. Retrieved context is token-trimmed (`MAX_CONTEXT_TOKENS`).
-5. Groq chat completion API generates the final answer using a system prompt aligned to Acharya Prashant's tone.
+5. Groq chat completion API generates the final answer using a domain-aligned system prompt.
 
 Core runtime flow:
 - `app.py` loads `data/file_paths.pkl` and `data/transcripts.pkl` at startup.
@@ -148,13 +138,13 @@ Open `http://localhost:7860`.
 Build:
 
 ```bash
-docker build -t acharya-prashant-rag .
+docker build -t rag-qa-assistant .
 ```
 
 Run:
 
 ```bash
-docker run --rm -p 7860:7860 -e GROQ_API_KEY="your_groq_api_key" acharya-prashant-rag
+docker run --rm -p 7860:7860 -e GROQ_API_KEY="your_groq_api_key" rag-qa-assistant
 ```
 
 ## API Reference
@@ -195,7 +185,7 @@ curl -X POST "http://localhost:7860/ask" \
 `main.py` includes stages for data preparation and querying.
 
 Pipeline stages:
-1. Download subtitles from channels (`utils/download_vtt.py`)
+1. Download subtitles from configured channels (`utils/download_vtt.py`)
 2. Convert `.vtt` to cleaned `.txt` (`utils/vtt_to_txt.py`, `utils/preprocess.py`)
 3. Load and persist transcript corpus (`data/*.pkl`)
 4. Create FAISS index (`api/embed_transcripts.py`)

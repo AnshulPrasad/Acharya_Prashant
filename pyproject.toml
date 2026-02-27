@@ -1,5 +1,5 @@
 [project]
-name = "acharya-prashant"
+name = "transcript-rag-summarizer"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

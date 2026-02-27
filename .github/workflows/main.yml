@@ -16,4 +16,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://AnshulPrasad:$HF_TOKEN@huggingface.co/spaces/AnshulPrasad/Acharya_Prashant main
+        run: git push https://AnshulPrasad:$HF_TOKEN@huggingface.co/spaces/AnshulPrasad/transcript-rag-summarizer main
