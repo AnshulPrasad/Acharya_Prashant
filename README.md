@@ -1,5 +1,5 @@
 ---
-title: Acharya Prashant API
+title: ask Acharya Prashant
 emoji: 📚
 colorFrom: indigo
 colorTo: blue
