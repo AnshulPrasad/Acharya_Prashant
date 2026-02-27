@@ -1,3 +1,13 @@
+---
+title: ask Assistant
+emoji: 📚
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_file: app.py
+pinned: false
+---
+
 # RAG Q&A Assistant
 
 A retrieval-augmented question-answering (RAG) system built on curated YouTube subtitle transcripts.
