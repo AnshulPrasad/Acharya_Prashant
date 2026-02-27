@@ -3,7 +3,7 @@ from groq import Groq
 import tiktoken
 
 from utils.token import count_tokens
-from config import API_URL, MODEL, GROQ_API_KEY, SYSTEM_PROMPT
+from config import MODEL, GROQ_API_KEY, SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
